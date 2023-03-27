@@ -1,5 +1,4 @@
 import collections
-import numpy
 from ..bot_control import Move
 
 _Enemy = collections.namedtuple('Enemy', ['id', 'position'])
@@ -50,6 +49,14 @@ def _create_search_vector(distance):
         Move.DOWN: [(i, -distance - i) for i in range(0, -distance, -1)],
         Move.LEFT: [(i, distance + i) for i in range(-distance, 0)]
     }
+
+
+def _counter_move(move):
+    if move == Move.UP: return Move.DOWN
+    if move == Move.DOWN: return Move.UP
+    if move == Move.RIGHT: return Move.LEFT
+    if move == Move.LEFT: return Move.RIGHT
+    return move
 
 
 class ch34tsRus:
@@ -108,15 +115,37 @@ class ch34tsRus:
 
         return _Position(x=0, y=0)
 
-    def _get_direction(self, target, grid):
+    def _get_direction(self, target, grid, enemies):
+
+        def get_x_option(vector):
+            return Move.LEFT if vector[0] < 0 else Move.RIGHT
+
+        def get_y_option(vector):
+            return Move.DOWN if vector[1] < 0 else Move.UP
+
         vector = self._position.vector(target)
 
-        if abs(vector[0]) > abs(vector[1]):
-            if vector[0] < 0: return Move.LEFT
-            return Move.RIGHT
+        if vector[0] == 0:
+            return get_y_option(vector)
+        elif vector[1] == 0:
+            return get_x_option(vector)
 
-        if vector[1] < 0: return Move.DOWN
-        return Move.UP
+        options = {
+            get_x_option(vector): abs(vector[0]),
+            get_y_option(vector): abs(vector[1])
+        }
+
+        counter = _counter_move(self._last[0])
+        if counter in options:
+            del options[counter]
+            return next(iter(options))
+
+        for move in options.keys():
+            pos = self._position.step(move)
+            options[move] += 1000 if self._will_win(grid[pos.y][pos.x]) else 0
+
+        return sorted(options.items(), reverse=True,
+                      key=lambda kv: kv[1])[0][0]
 
     def determine_next_move(self, grid, enemies, game_info):
         enemies = self._pre_process(enemies)
@@ -126,4 +155,4 @@ class ch34tsRus:
 
         target = self._find_target(grid, enemies, game_info)
 
-        return self._set_last(self._get_direction(target, grid))
+        return self._set_last(self._get_direction(target, grid, enemies))
