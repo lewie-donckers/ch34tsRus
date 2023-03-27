@@ -90,23 +90,20 @@ class ch34tsRus:
         self._last.insert(0, move)
         return move
 
-    def _find_target(self, grid, enemies, game_info):
-        winnable = numpy.select([grid != 0], [(self.id - grid) % 3], 2)
+    def _is_winnable(self, grid, enemies, position):
         for e in enemies:
-            p = e.position
-            for y in range(max(0, p.y - 1), min(game_info.grid_size, p.y + 2)):
-                for x in range(max(0, p.x - 1),
-                               min(game_info.grid_size, p.x + 2)):
-                    winnable[y][x] = 0
+            if e.position.distance(position) < 3:
+                return False
+        return self._will_win(grid[position.y][position.x])
 
+    def _find_target(self, grid, enemies, game_info):
         for r in range(1, game_info.grid_size):
             vectors = self._search_vectors[r]
             for d in self._last:
                 for v in vectors[d]:
                     pos = self._position.add(v)
-                    if pos.is_valid(
-                            game_info.grid_size) and (winnable[pos.y][pos.x]
-                                                      == 2):
+                    if pos.is_valid(game_info.grid_size) and self._is_winnable(
+                            grid, enemies, pos):
                         return pos
 
         return _Position(x=0, y=0)
