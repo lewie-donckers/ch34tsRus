@@ -37,6 +37,9 @@ class _Position:
     def __str__(self):
         return "Position({}, {})".format(self.x, self.y)
 
+    def __repr__(self):
+        return "_Position(x={}, y={})".format(self.x, self.y)
+
     @staticmethod
     def fromNumpy(n):
         return _Position(x=n[0], y=n[1])
@@ -62,6 +65,7 @@ def _counter_move(move):
 class ch34tsRus:
 
     def __init__(self):
+        self._target = None
         self._last = [Move.UP, Move.RIGHT, Move.DOWN, Move.LEFT]
         self._search_vectors = {
             d: _create_search_vector(d)
@@ -87,6 +91,7 @@ class ch34tsRus:
 
     def _should_stay(self, grid, enemies):
         for e in enemies:
+            # TODO test what value is best
             if self._position.distance(e.position) < 3:
                 return False
 
@@ -99,11 +104,13 @@ class ch34tsRus:
 
     def _is_winnable(self, grid, enemies, position):
         for e in enemies:
-            if e.position.distance(position) < 3:
+            if e.position.distance(
+                    position) < 3:  # TODO 3 is better than 2 and 4
                 return False
         return self._will_win(grid[position.y][position.x])
 
     def _find_target(self, grid, enemies, game_info):
+        targets = []
         for r in range(1, game_info.grid_size):
             vectors = self._search_vectors[r]
             for d in self._last:
@@ -111,11 +118,33 @@ class ch34tsRus:
                     pos = self._position.add(v)
                     if pos.is_valid(game_info.grid_size) and self._is_winnable(
                             grid, enemies, pos):
-                        return pos
+                        targets.append(pos)
+            if len(targets): break
 
-        return _Position(x=0, y=0)
+        options = {}
+        for t in targets:
+            # TODO 1 is better than 0, 2 or 3
+            score = 1000 * min(
+                1,
+                sum(
+                    p.is_valid(game_info.grid_size)
+                    and self._is_winnable(grid, enemies, p)
+                    for p in [t.step(m) for m in self._last]))
+            # TODO 20 is better than 10, 5 or 0 (should not be anything within 3 btw. since that is used for winnable)
+            # TODO check 100 (for large fields)
+            score -= max([
+                20 - d for e in enemies if (d := t.distance(e.position)) < 20
+            ],
+                         default=0)
+            options[t] = score
+
+        target = sorted(options.items(), reverse=True, key=lambda kv: kv[1])[0]
+
+        return target[0]
 
     def _get_direction(self, target, grid, enemies):
+
+        # TODO check if this can be optimized
 
         def get_x_option(vector):
             return Move.LEFT if vector[0] < 0 else Move.RIGHT
@@ -153,6 +182,6 @@ class ch34tsRus:
         if self._should_stay(grid, enemies):
             return Move.STAY
 
-        target = self._find_target(grid, enemies, game_info)
+        self._target = self._find_target(grid, enemies, game_info)
 
-        return self._set_last(self._get_direction(target, grid, enemies))
+        return self._set_last(self._get_direction(self._target, grid, enemies))
