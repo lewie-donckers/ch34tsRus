@@ -91,7 +91,7 @@ class ch34tsRus:
 
     def _should_stay(self, grid, enemies):
         for e in enemies:
-            # TODO test what value is best
+            # TODO 3 is better than 1, 2 and 4
             if self._position.distance(e.position) < 3:
                 return False
 
@@ -130,10 +130,9 @@ class ch34tsRus:
                     p.is_valid(game_info.grid_size)
                     and self._is_winnable(grid, enemies, p)
                     for p in [t.step(m) for m in self._last]))
-            # TODO 20 is better than 10, 5 or 0 (should not be anything within 3 btw. since that is used for winnable)
-            # TODO check 100 (for large fields)
+            # TODO 100 is better than 20, 10, 5 or 0
             score -= max([
-                20 - d for e in enemies if (d := t.distance(e.position)) < 20
+                100 - d for e in enemies if (d := t.distance(e.position)) < 100
             ],
                          default=0)
             options[t] = score
