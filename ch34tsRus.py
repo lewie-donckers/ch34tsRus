@@ -7,7 +7,7 @@ class ch34tsRus:
         pass
 
     def get_name(self):
-        return "Hein Won't Let Me Cheat"
+        return "Cheat 1"
 
     def get_contributor(self):
         return "Lewie"
