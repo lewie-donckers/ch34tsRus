@@ -74,7 +74,7 @@ class ch34tsRus:
         self._initialized = False
 
     def get_name(self):
-        return "Hein Won't Let Me Cheat"
+        return "Cheat 2"
 
     def get_contributor(self):
         return "Lewie"
