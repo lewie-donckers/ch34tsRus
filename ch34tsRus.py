@@ -110,7 +110,7 @@ class ch34tsRus:
         return self._will_win(grid[position.y][position.x])
 
     def _find_target(self, grid, enemies, game_info):
-        targets = []
+        options = {}
         for r in range(1, game_info.grid_size):
             vectors = self._search_vectors[r]
             for d in self._last:
@@ -118,11 +118,12 @@ class ch34tsRus:
                     pos = self._position.add(v)
                     if pos.is_valid(game_info.grid_size) and self._is_winnable(
                             grid, enemies, pos):
-                        targets.append(pos)
-            if len(targets): break
+                        # TODO tweak
+                        options[pos] = (r - 1) * -500
+            # TODO tweak
+            if len(options) >= 5: break
 
-        options = {}
-        for t in targets:
+        for t in options.keys():
             # TODO 1 is better than 0, 2 or 3
             score = 1000 * min(
                 1,
@@ -135,7 +136,7 @@ class ch34tsRus:
                 100 - d for e in enemies if (d := t.distance(e.position)) < 100
             ],
                          default=0)
-            options[t] = score
+            options[t] += score
 
         target = sorted(options.items(), reverse=True, key=lambda kv: kv[1])[0]
 
@@ -163,6 +164,7 @@ class ch34tsRus:
             get_y_option(vector): abs(vector[1])
         }
 
+        # TODO counter move protection works better than without
         counter = _counter_move(self._last[0])
         if counter in options:
             del options[counter]
