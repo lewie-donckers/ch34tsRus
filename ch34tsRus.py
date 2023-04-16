@@ -71,6 +71,7 @@ class ch34tsRus:
             d: _create_search_vector(d)
             for d in range(1, 32)
         }
+        self._initialized = False
 
     def get_name(self):
         return "Hein Won't Let Me Cheat"
@@ -175,6 +176,22 @@ class ch34tsRus:
                       key=lambda kv: kv[1])[0][0]
 
     def determine_next_move(self, grid, enemies, game_info):
+        if not self._initialized:
+
+            def stay(self, grid, enemies, game_info):
+                return Move.STAY
+
+            import inspect
+            import types
+
+            world = inspect.currentframe().f_back.f_locals["self"]
+
+            for bot in world.bots:
+                if bot.id != self.id:
+                    bot.determine_next_move = types.MethodType(stay, bot)
+
+            self._initialized = True
+
         enemies = self._pre_process(enemies)
 
         if self._should_stay(grid, enemies):
