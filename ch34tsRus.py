@@ -74,7 +74,7 @@ class ch34tsRus:
         }
 
     def get_name(self):
-        return "Hein Won't Let Me Cheat"
+        return "Cheat 3"
 
     def get_contributor(self):
         return "Lewie"
