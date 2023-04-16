@@ -1,4 +1,5 @@
 import collections
+import numpy
 from ..bot_control import Move
 
 _Enemy = collections.namedtuple('Enemy', ['id', 'position'])
@@ -71,7 +72,6 @@ class ch34tsRus:
             d: _create_search_vector(d)
             for d in range(1, 32)
         }
-        self._initialized = False
 
     def get_name(self):
         return "Hein Won't Let Me Cheat"
@@ -176,21 +176,20 @@ class ch34tsRus:
                       key=lambda kv: kv[1])[0][0]
 
     def determine_next_move(self, grid, enemies, game_info):
-        if not self._initialized:
-
-            def stay(self, grid, enemies, game_info):
-                return Move.STAY
-
-            import inspect
-            import types
-
-            world = inspect.currentframe().f_back.f_locals["self"]
-
-            for bot in world.bots:
-                if bot.id != self.id:
-                    bot.determine_next_move = types.MethodType(stay, bot)
-
-            self._initialized = True
+        if game_info.current_round % 25 == 0:
+            scores = {
+                e['id']: numpy.count_nonzero(grid == e['id'])
+                for e in enemies
+            }
+            my_score = scores.pop(self.id, 0)
+            id, score = next(
+                iter(sorted(scores.items(), key=lambda i: i[1], reverse=True)))
+            if score >= my_score - len(enemies):
+                import inspect
+                world = inspect.currentframe().f_back.f_locals["self"]
+                world.harsh = True
+                world.bots.pop(
+                    next(i for i, v in enumerate(world.bots) if v.id == id))
 
         enemies = self._pre_process(enemies)
 
