@@ -91,7 +91,7 @@ class ch34tsRus:
 
     def _should_stay(self, grid, enemies):
         for e in enemies:
-            # TODO 3 is better than 1, 2 and 4
+            # 3 is better than 1, 2 and 4
             if self._position.distance(e.position) < 3:
                 return False
 
@@ -104,8 +104,7 @@ class ch34tsRus:
 
     def _is_winnable(self, grid, enemies, position):
         for e in enemies:
-            if e.position.distance(
-                    position) < 3:  # TODO 3 is better than 2 and 4
+            if e.position.distance(position) < 3:  # 3 is better than 2 and 4
                 return False
         return self._will_win(grid[position.y][position.x])
 
@@ -118,20 +117,20 @@ class ch34tsRus:
                     pos = self._position.add(v)
                     if pos.is_valid(game_info.grid_size) and self._is_winnable(
                             grid, enemies, pos):
-                        # TODO tweak
+                        # TODO tweak. -500 seems good enough.
                         options[pos] = (r - 1) * -500
-            # TODO tweak
+            # TODO tweak. 5 seems good enough.
             if len(options) >= 5: break
 
         for t in options.keys():
-            # TODO 1 is better than 0, 2 or 3
+            # 1 is better than 0, 2 or 3
             score = 1000 * min(
                 1,
                 sum(
                     p.is_valid(game_info.grid_size)
                     and self._is_winnable(grid, enemies, p)
                     for p in [t.step(m) for m in self._last]))
-            # TODO 100 is better than 20, 10, 5 or 0
+            # 100 is better than 20, 10, 5 or 0
             score -= max([
                 100 - d for e in enemies if (d := t.distance(e.position)) < 100
             ],
@@ -143,8 +142,6 @@ class ch34tsRus:
         return target[0]
 
     def _get_direction(self, target, grid, enemies):
-
-        # TODO check if this can be optimized
 
         def get_x_option(vector):
             return Move.LEFT if vector[0] < 0 else Move.RIGHT
@@ -164,7 +161,7 @@ class ch34tsRus:
             get_y_option(vector): abs(vector[1])
         }
 
-        # TODO counter move protection works better than without
+        # counter move protection improves score
         counter = _counter_move(self._last[0])
         if counter in options:
             del options[counter]
